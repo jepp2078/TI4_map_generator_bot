@@ -1858,7 +1858,10 @@ public class ButtonListener extends ListenerAdapter {
         } else if (buttonID.startsWith("setTrapStep3_")) {
             ButtonHelperAbilities.setTrapStep3(activeGame,player, event,buttonID);
         } else if (buttonID.startsWith("setTrapStep4_")) {
-            ButtonHelperAbilities.setTrapStep4(activeGame,player, event, buttonID);
+            ButtonHelperAbilities.setTrapStep4(activeGame, player, event, buttonID);
+        } else if (buttonID.startsWith("dslaneb")) {
+            String[] type = buttonID.split("_");
+            ButtonHelperFactionSpecific.resolveSparkThrusters(player, activeGame, event, type[1]);
         } else if (buttonID.startsWith("stymiePlayerStep1_")) {
             ButtonHelperFactionSpecific.resolveStymiePlayerStep1(activeGame, player, event, buttonID);
         } else if (buttonID.startsWith("stymiePlayerStep2_")) {

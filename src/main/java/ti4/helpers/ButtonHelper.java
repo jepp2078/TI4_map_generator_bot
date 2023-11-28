@@ -5067,6 +5067,14 @@ public class ButtonHelper {
             String techEmoji = Emojis.getEmojiFromDiscord(techType.toString().toLowerCase() + "tech");
             String techText = techRep.getText();
 
+            if (techName.equalsIgnoreCase("spark thrusters")) {
+                if(p1.getStrategicCC() > 0 || !p1.getFragments().isEmpty()){
+                    Button tButton = Button.success(finChecker + prefix + "choice_" + tech, "Use " + techName).withEmoji(Emoji.fromFormatted(techEmoji));
+                    compButtons.add(tButton);
+                }
+                continue;
+            }
+
             if (techText.contains("ACTION")) {
                 Button tButton = Button.danger(finChecker + prefix + "tech_" + tech, "Exhaust " + techName).withEmoji(Emoji.fromFormatted(techEmoji));
                 compButtons.add(tButton);
@@ -5801,9 +5809,14 @@ public class ButtonHelper {
                 ButtonHelper.purge2StarCharters(p1);
                 new DrawBlueBackTile().drawBlueBackTiles(event, activeGame, p1, 1, false);
             }
+            case "choice" ->{
+                if ("dslaneb".equalsIgnoreCase(buttonID)) {
+                    ButtonHelperFactionSpecific.getButtonsForSparkThrusters(p1, activeGame, event);
+                }
+            }
         }
 
-        if (!firstPart.contains("ability") && !firstPart.contains("getRelic")) {
+        if (!firstPart.contains("ability") && !firstPart.contains("getRelic") && !firstPart.contains("choice")) {
             String message = "Use buttons to end turn or do another action.";
             List<Button> systemButtons = getStartOfTurnButtons(p1, activeGame, true, event);
             MessageHelper.sendMessageToChannelWithButtons(event.getMessageChannel(), message, systemButtons);

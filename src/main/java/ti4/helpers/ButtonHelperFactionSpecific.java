@@ -31,6 +31,7 @@ import ti4.map.Player;
 import ti4.map.Tile;
 import ti4.map.UnitHolder;
 import ti4.message.MessageHelper;
+import ti4.model.TechnologyModel;
 
 public class ButtonHelperFactionSpecific {
 
@@ -746,6 +747,65 @@ public class ButtonHelperFactionSpecific {
         List<Button> buttons = List.of(convert2CommButton, get2CommButton, Button.danger("deleteButtons", "Done resolving"));
         MessageHelper.sendMessageToChannelWithButtons(event.getMessageChannel(), message, buttons);
         ButtonHelper.deleteTheOneButton(event);
+    }
+
+    public static void getButtonsForSparkThrusters(Player player, Game activeGame, ButtonInteractionEvent event) {
+        String finChecker = "FFCC_" + player.getFaction() + "_";
+        String message = ButtonHelper.getTrueIdentity(player, activeGame) + " Resolve Spark Thrusters ability using buttons. ";
+        TechnologyModel techRep = Mapper.getTechs().get("dslaneb");
+        List<Button> buttons = new ArrayList<>();
+        String techEmoji = Emojis.getEmojiFromDiscord(techRep.getType().toString().toLowerCase() + "tech");
+
+        if (player.getStrategicCC() > 0) {
+            buttons.add(Button.danger(finChecker + "dslaneb_" + "cc", "Spend CC to exhaust " + techRep.getName()).withEmoji(Emoji.fromFormatted(techEmoji)));
+        }
+
+        if (!player.getFragments().isEmpty()) {
+            buttons.add(Button.danger(finChecker + "dslaneb_" + "frag", "Purge fragment to use " + techRep.getName()).withEmoji(Emoji.fromFormatted(techEmoji)));
+        }
+
+        MessageHelper.sendMessageToChannelWithButtons(ButtonHelper.getCorrectChannel(player, activeGame), message, buttons);
+    }
+
+    public static void resolveSparkThrusters(Player player, Game activeGame, ButtonInteractionEvent event, String type) {
+        if (Objects.equals(type, "cc")) {
+            player.exhaustTech("dslaneb");
+            int cc = player.getStrategicCC();
+            cc--;
+            player.setStrategicCC(cc);
+
+            String message = ButtonHelper.getTrueIdentity(player, activeGame) + " Choose system to move from:";
+            List<Button> buttons = getSparkThrusterTilesToMoveFrom(player,activeGame, event);
+            MessageHelper.sendMessageToChannelWithButtons(ButtonHelper.getCorrectChannel(player, activeGame), message, buttons);
+        }
+    }
+
+    public static List<Button> getSparkThrusterTilesToMoveFrom(Player player, Game activeGame, GenericInteractionCreateEvent event) {
+        String finChecker = "FFCC_" + player.getFaction() + "_";
+        List<Button> buttons = new ArrayList<>();
+        for (Map.Entry<String, Tile> tileEntry : new HashMap<>(activeGame.getTileMap()).entrySet()) {
+            if (FoWHelper.playerHasUnitsInSystem(player, tileEntry.getValue())) {
+                Tile tile = tileEntry.getValue();
+                Button validTile = Button.success(finChecker + "sparkThrusterMoveFrom_" + tileEntry.getKey(), tile.getRepresentationForButtons(activeGame, player));
+                buttons.add(validTile);
+            }
+        }
+
+        return buttons;
+    }
+
+    public static List<Button> getSparkThrusterTilesToMoveTo(Player player, Game activeGame, Tile tile) {
+        String finChecker = "FFCC_" + player.getFaction() + "_";
+        List<Button> buttons = new ArrayList<>();
+        for (String tilePos : FoWHelper.getAdjacentTiles(activeGame, tile.getPosition(), player, true)) {
+            Tile toCheck = activeGame.getTileByPosition(tilePos);
+            if (!FoWHelper.otherPlayersHaveUnitsInSystem(player, toCheck, activeGame)) {
+                Button validTile = Button.success(finChecker + "sparkThrusterMoveTo_" + toCheck, tile.getRepresentationForButtons(activeGame, player));
+                buttons.add(validTile);
+            }
+        }
+
+        return buttons;
     }
 
     public static void KeleresIIHQCCGainCheck(Player player, Game activeGame) {
